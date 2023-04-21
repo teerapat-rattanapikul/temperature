@@ -11,6 +11,7 @@ function App() {
   const [temperature, setTemperature] = useState()
   const [inputDistrict, setInputDistrict] = useState({district: 'เมืองน่าน', zip: '55000'})
   const [inputProvice, setInputProvice] = useState('น่าน')
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(()=>{
     const zip = zipCode.filter((zip) => zip.province === 'น่าน')
@@ -73,17 +74,25 @@ function App() {
 
   const handleSearch = async () =>{
     const endpoint = apiEndpoint.replace('{ZIP}',inputDistrict.zip).replace('{API_KEY}', process.env.REACT_APP_API_KEY)
-    const result = await axios.get(endpoint)
-    if(result.data){
-      const temperatureData = {
-        temp: (result.data.main.temp - 273.15).toFixed(2),
-        temp_min: (result.data.main.temp_min - 273.15).toFixed(2),
-        temp_max: (result.data.main.temp_max - 273.15).toFixed(2),
-        humidity: result.data.main.humidity,
-        weather: weatherSwtich(result.data.weather[0].description),
-        wind: result.data.wind.speed
+    try {
+      const result = await axios.get(endpoint)
+      if(result.data){
+        setNotFound(false)
+        const temperatureData = {
+          temp: (result.data.main.temp - 273.15).toFixed(2),
+          temp_min: (result.data.main.temp_min - 273.15).toFixed(2),
+          temp_max: (result.data.main.temp_max - 273.15).toFixed(2),
+          humidity: result.data.main.humidity,
+          weather: weatherSwtich(result.data.weather[0].description),
+          wind: result.data.wind.speed
+        }
+        setTemperature(temperatureData)
       }
-      setTemperature(temperatureData)
+    } catch (error) {
+      if(error?.response){
+        setNotFound(true)
+        setTemperature()
+      }
     }
   }
 
@@ -112,7 +121,7 @@ function App() {
           </select>
       </div>
       {
-        temperature && 
+        temperature &&
         <>
           { temperature.weather? <img src={require(`./images/${temperature.weather}.png`)} atl={temperature.weather} width={150} height={150} /> 
           : <div style={{width:'150px', height: '150px', visibility: 'hidden'}} />
@@ -134,6 +143,12 @@ function App() {
             </div>
           </div>
         </>
+      }
+      {
+        notFound &&  
+        <p className='not_found_text'>
+          ไม่พบข้อมูล
+        </p>
       }
     </div>
   );
