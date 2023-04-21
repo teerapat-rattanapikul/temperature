@@ -64,6 +64,10 @@ function App() {
       default:
         break;
     }
+    if(imageName===''){
+      if (weather.includes('rain'))imageName = 'rain'
+      else if (weather.includes('cloud'))imageName = 'clouds'
+    }
     return imageName
   }
 
@@ -110,7 +114,9 @@ function App() {
       {
         temperature && 
         <>
-          <img src={require(`./images/${temperature.weather}.png`)} atl={temperature.weather} width={150} height={150} />
+          { temperature.weather? <img src={require(`./images/${temperature.weather}.png`)} atl={temperature.weather} width={150} height={150} /> 
+          : <div style={{width:'150px', height: '150px', visibility: 'hidden'}} />
+          }
           <p className='temp_text'>
             {temperature.temp} °C
           </p>
